@@ -1,0 +1,3 @@
+[submodule "wllama"]
+	path = wllama
+	url = https://github.com/ngxson/wllama.git
