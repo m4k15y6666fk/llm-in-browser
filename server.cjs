@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from the 'public' directory
-app.use(express.static('.'));
+app.use(express.static('./dev'));
 
 // Create an HTTPS server with your custom certificate and key
 const httpsServer = https.createServer(credentials, app);
