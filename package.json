@@ -2,6 +2,10 @@
   "name": "llm-in-browser",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.build.json && ./fix_extension.sh",
+    "start": "bun run build && bun run ./server.cjs"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

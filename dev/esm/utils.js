@@ -1,4 +1,20 @@
-const _loadBinaryResource = async (url) => {
+const response_loading_message = async (response, id = 0) => {
+    const total_length = Number(response.headers.get('Content-Length'));
+    let progress_length = 0;
+    const stream = response.body || new ReadableStream();
+    // @ts-ignore
+    for await (let chunk of stream) {
+        progress_length += chunk.length;
+        postMessage({
+            event: 'load.progress',
+            id,
+            url: response.url,
+            rate: progress_length * 100 / total_length,
+        });
+    }
+    return;
+};
+const _loadBinaryResource = async (url, id = 0) => {
     let cache = null;
     const window = self;
     // Try to find if the model data is cached in Web Worker memory.
@@ -15,27 +31,21 @@ const _loadBinaryResource = async (url) => {
         }
     }
     // Download model and store in cache
-    const _promise = new Promise((resolve, reject) => {
-        const req = new XMLHttpRequest();
-        req.open('GET', url, true);
-        req.responseType = 'arraybuffer';
-        req.onload = async (_) => {
-            const arrayBuffer = req.response; // Note: not req.responseText
-            if (arrayBuffer) {
-                const byteArray = new Uint8Array(arrayBuffer);
-                if (cache) {
-                    await cache.put(url, new Response(arrayBuffer));
-                }
-                ;
-                resolve(byteArray);
-            }
-        };
-        req.onerror = (err) => {
-            reject(err);
-        };
-        req.send(null);
-    });
-    return await _promise;
+    let _promise = new Uint8Array();
+    try {
+        const response = await fetch(url);
+        await response_loading_message(response.clone(), id);
+        const arrayBuffer = await response.arrayBuffer();
+        _promise = new Uint8Array(arrayBuffer);
+        if (cache) {
+            await cache.put(url, new Response(arrayBuffer));
+        }
+        ;
+    }
+    catch (err) {
+        throw err;
+    }
+    return _promise;
 };
 export const joinBuffers = (buffers) => {
     const totalSize = buffers.reduce((acc, buf) => acc + buf.length, 0);
@@ -61,20 +71,23 @@ export const loadBinaryResource = async (url, nMaxParallel) => {
     }));
     // This is not multi-thread, but just a simple naming to borrow the idea
     const threads = [];
-    const runDownloadThread = async () => {
+    const runDownloadThread = async (id = 0) => {
         while (true) {
             const task = tasks.find(t => !t.started);
             if (!task)
                 return;
             task.started = true;
-            task.result = await _loadBinaryResource(task.url);
+            task.result = await _loadBinaryResource(task.url, id);
         }
     };
     for (let i = 0; i < nMaxParallel; i++) {
-        threads.push(runDownloadThread());
+        threads.push(runDownloadThread(i));
     }
     // wait until all downloads finish
     await Promise.all(threads);
+    postMessage({
+        event: 'load.complete',
+    });
     return tasks.length === 1
         ? tasks[0].result
         : tasks.map(r => r.result);

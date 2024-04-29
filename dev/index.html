@@ -56,7 +56,15 @@
       'multi-thread/wllama.wasm'      : './esm/multi-thread/wllama.wasm',
       'multi-thread/wllama.worker.mjs': './esm/multi-thread/wllama.worker.mjs',
     };
+    /*
     const CMPL_MODEL = 'https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories15M-q4_0.gguf';
+    const CMPL_MODEL_SIZE = '19MB';
+    */
+    const CMPL_MODEL = [
+      'https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00001-of-00003.gguf',
+      'https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00002-of-00003.gguf',
+      'https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00003-of-00003.gguf',
+    ];
     const CMPL_MODEL_SIZE = '19MB';
     const EMBD_MODEL = 'https://huggingface.co/ggml-org/models/resolve/main/bert-bge-small/ggml-model-f16.gguf';
     const EMBD_MODEL_SIZE = '67MB';
@@ -64,7 +72,13 @@
     async function main() {
       setCmplDisable(true);
       setEmbdDisable(true);
-      const getName = (url) => url.match(/\/resolve\/main(.*)/)[1];
+      const getName = (url) => {
+        if (Array.isArray(url)) {
+          return url[0].match(/\/resolve\/main(.*)/)[1];
+        } else {
+          return url.match(/\/resolve\/main(.*)/)[1];
+        }
+      }
       elemCmplModel.textContent = `${getName(CMPL_MODEL)}, size: ${CMPL_MODEL_SIZE}`;
       elemEmbdModel.textContent = `${getName(EMBD_MODEL)}, size: ${EMBD_MODEL_SIZE}`;
       elemBtnStartCmpl.onclick = async () => {
@@ -158,6 +172,22 @@
     };
 
     main();
+
+
+    let _list = [];
+    let _isCompleted = [];
+    window.addEventListener('message', (msg) => {
+      const { event } = msg.data;
+      if (event == 'load.progress') {
+        const { id, rate} = msg.data;
+        _list[id] = rate;
+        console.log(
+          (_list.reduce((a, c) => a + c) / _list.length).toFixed(0)
+        );
+      } else if (event == 'load.complete') {
+        console.log('model: loaded');
+      }
+    });
   </script>
 </body>
 </html>
