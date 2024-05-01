@@ -47,7 +47,21 @@
 <body>
 
   <div class="content mx-6 mt-6">
-    <h2>Title</h2>
+    <h2>LLM in Browser</h2>
+
+    <p>大規模言語モデル（LLM）をブラウザの機能だけで（サーバーにデータを送らずに）使ってみるサイトです。</p>
+    <p>各モデルの利用条件は、各モデルの公式リポジトリ等を参照してください。</p>
+    <p>このサイトが気に入ったら、<a href="https://potofu.me/m4k15y6666fk/">ご支援</a>をお願いします。</p>
+
+    <dl>
+      <dt class="has-text-weight-bold">GitHub</dt>
+      <dd><a href="https://github.com/m4k15y6666fk/llm-in-browser">https://github.com/m4k15y6666fk/llm-in-browser</a></dd>
+
+      <dt class="has-text-weight-bold">作者のページ</dt>
+      <dd><a href="https://potofu.me/m4k15y6666fk/">https://potofu.me/m4k15y6666fk/</a></dd>
+    </dl>
+
+    <hr>
 
     <h3>
       <span data-heading="true"></span>
@@ -121,6 +135,16 @@
         </div>
       </div>
       <progress id="download-progress" class="progress is-small" max="100"></progress>
+    </div>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Threads:</label>
+        <div class="control">
+          <input class="input" id="input-threads" type="number" min="1" max="64" step="1" value="1">
+        </div>
+        <p class="help">&#8251;&#32;並列処理のスレッド数</p>
+      </div>
     </div>
 
     <div class="block">
@@ -199,11 +223,33 @@
       <span>文章を生成</span>
     </h3>
 
+    <div class="block" id="generate" style="display: none;">
+      <div class="columns">
+        <div class="column is-three-quaters">
+          <span id="generate-text">Now loading...</span>
+        </div>
+        <div class="column has-text-right">
+          <span>残り </span><span id="generate-seconds">-</span><span> 秒</span>
+        </div>
+      </div>
+      <progress id="generate-progress" class="progress is-small" max="100"></progress>
+    </div>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Temperature:</label>
+        <div class="control">
+          <input class="input" id="input-temperature" type="number" min="0.1" step="0.1" max="1.0" value="0.5">
+        </div>
+        <p class="help">&#8251;&#32;生成する文章のランダム度</p>
+      </div>
+    </div>
+
     <div class="block">
       <div class="field">
         <label class="label">Number of tokens:</label>
         <div class="control">
-          <input class="input" id="input_n_predict" type="number" value="64">
+          <input class="input" id="input_n_predict" type="number" min="1" step="1" value="64">
         </div>
         <p class="help">&#8251;&#32;生成する文章の長さ</p>
       </div>

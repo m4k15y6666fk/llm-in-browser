@@ -34,6 +34,12 @@ const download = {
     seconds: document.querySelector('#download-seconds'),
     percentage: document.querySelector('#download-percentage'),
 };
+const elem_generate = {
+    _: document.querySelector('#generate'),
+    progress: document.querySelector('#generate-progress'),
+    text: document.querySelector('#generate-text'),
+    seconds: document.querySelector('#generate-seconds'),
+};
 const elem_storage = {
     _: document.querySelector('#storage'),
     progress: document.querySelector('#storage-progress'),
@@ -69,6 +75,8 @@ const history_template = document.querySelector('#history-template');
 //const elemCmplModel = document.getElementById('cmpl_model');
 const elemBtnStartCmpl = document.getElementById('btn_start_cmpl');
 //const elemInput = document.getElementById('input_prompt');
+const elem_threads = document.querySelector('#input-threads');
+const elem_temperature = document.querySelector('#input-temperature');
 const elemNPredict = document.getElementById('input_n_predict');
 const elemBtnCompletions = document.getElementById('btn_run_cmpl');
 const prompt = document.getElementById('prompt');
@@ -86,6 +94,7 @@ const elemOutputEmbd = document.getElementById('output_embd');
 const setCmplDisable = (disabled) => {
     prompt.readOnly = disabled;
 
+    elem_temperature.disabled = disabled;
     elemNPredict.disabled = disabled;
     elemBtnCompletions.disabled = disabled;
 
@@ -260,6 +269,7 @@ async function main() {
         elemBtnStartCmpl.disabled = true;
         elem_select_model.disabled = true;
         elem_select_template.disabled = true;
+        elem_threads.disabled = true;
 
         await startCompletions(CMPL_MODEL);
 
@@ -281,9 +291,13 @@ async function main() {
 let _clock = {};
 async function startCompletions(modelUrl) {
     _clock = new Clock();
+    const _threads = (elem_threads.value > navigator.hardwareConcurrency || elem_threads.value <= 0)
+                     ? navigator.hardwareConcurrency
+                     : Number(elem_threads.value);
+    console.log('threads: ' + _threads);
 
     const wllama = new Wllama(CONFIG_PATHS);
-    await wllama.loadModelFromUrl(modelUrl, {});
+    await wllama.loadModelFromUrl(modelUrl, { n_threads: _threads });
     await update_storage_estimate();
     setCmplDisable(false);
 
@@ -292,6 +306,32 @@ async function startCompletions(modelUrl) {
     });
 
     elemBtnCompletions.onclick = async () => {
+        elem_generate._.style.display = '';
+        elem_generate.progress.value = 1;
+        elem_generate.progress.classList.remove('is-primary');
+        elem_generate.text.textContent = '準備中...';
+        elem_generate.seconds.parentElement.style.display = '';
+        elem_generate.seconds.value = 99;
+        setTimeout(function _timer() {
+            if (elem_generate.progress.value >= 100) {
+                elem_generate.text.textContent = '準備完了';
+                elem_generate.seconds.parentElement.style.display = 'none';
+            } else {
+                elem_generate.progress.value++;
+                elem_generate.seconds.value--;
+                _timer();
+            }
+        }, 1000);
+        const _when_start_generate = _ => {
+            elem_generate.progress.value = 100;
+            elem_generate.progress.classList.add('is-primary');
+        }
+
+        const _temperature = (elem_temperature.value > 1 || elem_temperature.value < 0)
+                         ? 0.5
+                         : Number(elem_temperature.value);
+        console.log('temperature: ' + _temperature);
+
         setCmplDisable(true);
 
         let _first = true;
@@ -299,13 +339,13 @@ async function startCompletions(modelUrl) {
         await wllama.createCompletion(prompt.value, {
             nPredict: parseInt(elemNPredict.value),
             sampling: {
-            temp: 0.5,
-            top_k: 40,
-            top_p: 0.9,
+                temp: _temperature,
+                top_k: 40,
+                top_p: 0.9,
             },
             onNewToken: (token, piece, currentText) => {
             if (_first) {
-                console.log('ssss');
+                _when_start_generate();
                 _first = false;
             }
             prompt.value = user_text + currentText;
