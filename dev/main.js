@@ -54,6 +54,12 @@ const elem_select_template = document.querySelector('#select-template');
 
 const copy_button = document.querySelector('#copy-button');
 
+
+// Remove Storage
+const remove_history_button = document.querySelector('#remove-history-button');
+const remove_models_button = document.querySelector('#remove-models-button');
+const remove_all_button = document.querySelector('#remove-all-button');
+
 // History
 const save_button = document.querySelector('#save-button');
 const history_container = document.querySelector('#history-container');
@@ -87,6 +93,10 @@ const setCmplDisable = (disabled) => {
     save_button.disabled = disabled;
 
     elem_select_template.disabled = disabled;
+
+    //remove_history_button.disabled = disabled;
+    remove_models_button.disabled = disabled;
+    remove_all_button.disabled = disabled;
 
     if (elem_select_model.disabled) {
         disabled
@@ -141,6 +151,15 @@ elem_select_template.addEventListener('change', _ => {
     const _template = TEMPLATES[elem_select_template.value];
 
     prompt.value = _template.before + prompt.value + _template.after;
+});
+
+remove_models_button.addEventListener('click', async _ => {
+    try {
+        await window.caches.delete('wllama_cache');
+        window.location.reload();
+    } catch(err) {
+        console.error(err);
+    }
 });
 
 
@@ -205,6 +224,24 @@ const initialize_database = async _ => {
     save_button.addEventListener('click', async _ => {
         await save_history(prompt.value);
     });
+
+    remove_history_button.addEventListener('click', async _ => {
+        try {
+            await _database.removeAllObject();
+            window.location.reload();
+        } catch(err) {
+            console.error(err);
+        }
+    });
+    remove_all_button.addEventListener('click', async _ => {
+        try {
+            await window.caches.delete('wllama_cache');
+            await _database.removeAllObject();
+            window.location.reload();
+        } catch(err) {
+            console.error(err);
+        }
+    });
 }
 
 async function main() {
@@ -249,6 +286,10 @@ async function startCompletions(modelUrl) {
     await wllama.loadModelFromUrl(modelUrl, {});
     await update_storage_estimate();
     setCmplDisable(false);
+
+    remove_models_button.addEventListener('click', _ => {
+        true;
+    });
 
     elemBtnCompletions.onclick = async () => {
         setCmplDisable(true);
