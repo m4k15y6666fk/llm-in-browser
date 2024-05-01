@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>wllama.cpp demo</title>
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css" />
+
+  <link rel="stylesheet" href="./assets/css/all.min.css" />
+
+  <!-- wllama.git
   <style>
     body {
       background-color: rgb(55, 55, 55);
@@ -19,20 +24,266 @@
       padding: 0.7em;
     }
   </style>
+  -->
+
+  <style>
+    textarea {
+      resize: none;
+    }
+    @supports (field-sizing: content) {
+      textarea {
+        field-sizing: content;
+      }
+    }
+    @supports not (field-sizing: content) {
+      textarea {
+        min-height: 30vh;
+      }
+    }
+  </style>
+
+  <script type="module" src="./main.js"></script>
 </head>
 <body>
 
-  <h2>Completions</h2>
-  Model: <span id="cmpl_model"></span><br/>
-  <button id="btn_start_cmpl">Load model</button><br/>
-  Prompt: <input id="input_prompt" value="Once upon a time," /><br/>
-  Number of tokens: <input id="input_n_predict" value="50" type="number" /><br/>
-  <button id="btn_run_cmpl">Run completions</button>
-  <br/>
-  <br/>
-  Completion: <br/>
-  <div id="output_cmpl"></div>
+  <div class="content mx-6 mt-6">
+    <h2>Title</h2>
 
+    <h3>
+      <span data-heading="true"></span>
+      <span>モデルを選択</span>
+    </h3>
+
+    <div class="block">
+      <dl>
+        <dt class="has-text-weight-bold">Model</dt>
+        <dd id="model-name"></dd>
+
+        <dt class="has-text-weight-bold">Type</dt>
+        <dd id="model-type"></dd>
+
+        <dt class="has-text-weight-bold">Language</dt>
+        <dd id="model-lang"></dd>
+
+        <dt class="has-text-weight-bold">size</dt>
+        <dd id="model-size"></dd>
+
+        <dt class="has-text-weight-bold">Repository</dt>
+        <dd>
+          <a id="model-repo" href="#"></a>
+        </dd>
+      </dl>
+      
+    </div>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Model:</label>
+        <div class="control has-icons-left">
+          <div class="select is-rounded">
+            <select id="select-model">
+              <optgroup label="Japanese">
+                <option value="0" selected></option>
+                <option value="1"></option>
+                <option value="2"></option>
+                <option value="3"></option>
+              </optgroup>
+              <optgroup label="English">
+                <option value="4"></option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="icon is-small is-left">
+            <i class="fas fa-robot"></i>
+          </div>
+        </div>
+        <p class="help">&#8251;&#32;モデルを選択してください</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>
+      <span data-heading="true"></span>
+      <span>モデルをロード</span>
+    </h3>
+
+    <div class="block" id="download" style="display: none;">
+      <div class="columns">
+        <div class="column is-half">
+          <span id="download-text">Now loading...</span>
+        </div>
+        <div class="column has-text-right">
+          <span>残り </span><span id="download-seconds">-</span><span> 秒</span>
+        </div>
+        <div class="column has-text-right">
+          <span id="download-percentage">0</span><span> %</span>
+        </div>
+      </div>
+      <progress id="download-progress" class="progress is-small" max="100"></progress>
+    </div>
+
+    <div class="block">
+      <button class="button is-link is-rounded" id="btn_start_cmpl">
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-download"></i>
+          </span>
+          <span>Load</span>
+        </span>
+      </button>
+    </div>
+
+    <hr>
+
+    <h3>
+      <span data-heading="true"></span>
+      <span>文章を入力</span>
+    </h3>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Template:</label>
+        <div class="control has-icons-left">
+          <div class="select is-rounded">
+            <select id="select-template">
+              <!--
+              <option value="0" selected></option>
+              <option value="1"></option>
+              -->
+            </select>
+          </div>
+          <div class="icon is-small is-left">
+            <i class="fas fa-robot"></i>
+          </div>
+        </div>
+        <p class="help">&#8251;&#32;変更すると、プロンプトが消去されます</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Prompt:</label>
+        <div class="control">
+          <textarea class="textarea" id="prompt">昔々あるところに、おじいさんとおばあさんがいました。おじいさんは、</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="field is-grouped">
+        <button class="button is-rounded" id="copy-button">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-clone"></i>
+            </span>
+            <span>Copy</span>
+          </span>
+        </button>
+
+        <button class="button is-rounded" id="save-button">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-save"></i>
+            </span>
+            <span>Save</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>
+      <span data-heading="true"></span>
+      <span>文章を生成</span>
+    </h3>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Number of tokens:</label>
+        <div class="control">
+          <input class="input" id="input_n_predict" type="number" value="64">
+        </div>
+        <p class="help">&#8251;&#32;生成する文章の長さ</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <button class="button is-rounded" id="btn_run_cmpl">
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-play"></i>
+          </span>
+          <span>Run</span>
+        </span>
+      </button>
+    </div>
+
+    <hr>
+
+    <h4>&#8251;&#32;ストレージ容量の確認</h4>
+
+    <div class="block" id="storage">
+      <div class="columns">
+        <div class="column is-half">
+          <span id="storage-text">Storage</span>
+        </div>
+        <div class="column has-text-right">
+          <span>[ </span>
+          <span id="storage-usage">0 MB</span>
+          <span> / </span>
+          <span id="storage-quota">0 MB</span>
+          <span> ]</span>
+        </div>
+      </div>
+      <progress id="storage-progress" class="progress is-small" value="0" max="100"></progress>
+    </div>
+
+    <div class="block">
+      <div class="field is-grouped">
+        <button class="button is-rounded" id="remove-history-button">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-trash-alt"></i>
+            </span>
+            <span>Remove History</span>
+          </span>
+        </button>
+
+        <button class="button is-rounded" id="remove-models-button">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-trash-alt"></i>
+            </span>
+            <span>Remove Models</span>
+          </span>
+        </button>
+
+        <button class="button is-rounded is-danger" id="remove-all-button">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-trash-alt"></i>
+            </span>
+            <span>Remove All</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>
+      <span data-heading="true"></span>
+      <span>履歴</span>
+    </h3>
+
+    <div class="container" id="history-container"></div>
+
+  </div>
+
+
+  <!-- wllama.git
   <br/>
   --------------------<br/>
   <br/>
@@ -45,149 +296,52 @@
   <button id="btn_run_embd">Calculate embeddings and cosine distance</button><br/>
   <br/>
   Cosine distance = <span id="output_embd"></span>
+  -->
 
-  <script type="module">
-    import { Wllama } from './esm/index.js';
+  <template id="history-template">
+    <div class="block" data-history="">
+      <div class="field">
+        <div class="control">
+          <textarea class="textarea" data-textarea="prompt" value=""></textarea>
+        </div>
+      </div>
+    </div>
 
-    const CONFIG_PATHS = {
-      'single-thread/wllama.js'       : './esm/single-thread/wllama.js',
-      'single-thread/wllama.wasm'     : './esm/single-thread/wllama.wasm',
-      'multi-thread/wllama.js'        : './esm/multi-thread/wllama.js',
-      'multi-thread/wllama.wasm'      : './esm/multi-thread/wllama.wasm',
-      'multi-thread/wllama.worker.mjs': './esm/multi-thread/wllama.worker.mjs',
-    };
-    /*
-    const CMPL_MODEL = 'https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories15M-q4_0.gguf';
-    const CMPL_MODEL_SIZE = '19MB';
-    */
-    const CMPL_MODEL = [
-      'https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00001-of-00003.gguf',
-      'https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00002-of-00003.gguf',
-      'https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00003-of-00003.gguf',
-    ];
-    const CMPL_MODEL_SIZE = '19MB';
-    const EMBD_MODEL = 'https://huggingface.co/ggml-org/models/resolve/main/bert-bge-small/ggml-model-f16.gguf';
-    const EMBD_MODEL_SIZE = '67MB';
+    <div class="block" data-history="">
+      <div class="field is-grouped">
+        <button class="button is-rounded" data-button="copy">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-clone"></i>
+            </span>
+            <span>Copy</span>
+          </span>
+        </button>
 
-    async function main() {
-      setCmplDisable(true);
-      setEmbdDisable(true);
-      const getName = (url) => {
-        if (Array.isArray(url)) {
-          return url[0].match(/\/resolve\/main(.*)/)[1];
-        } else {
-          return url.match(/\/resolve\/main(.*)/)[1];
-        }
-      }
-      elemCmplModel.textContent = `${getName(CMPL_MODEL)}, size: ${CMPL_MODEL_SIZE}`;
-      elemEmbdModel.textContent = `${getName(EMBD_MODEL)}, size: ${EMBD_MODEL_SIZE}`;
-      elemBtnStartCmpl.onclick = async () => {
-        elemBtnStartCmpl.disabled = true;
-        await startCompletions(CMPL_MODEL);
-        elemBtnStartCmpl.style.display = 'none';
-      };
-      elemBtnStartEmbd.onclick = async () => {
-        elemBtnStartEmbd.disabled = true;
-        await startEmbeddings(EMBD_MODEL);
-        elemBtnStartEmbd.style.display = 'none';
-      };
-    }
+        <button class="button is-rounded is-danger" data-button="remove">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-trash-alt"></i>
+            </span>
+            <span>Remove</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </template>
 
-    /////////////////////////////////////////////////////////////////////
-    // completions
-
-    async function startCompletions(modelUrl) {
-      const wllama = new Wllama(CONFIG_PATHS);
-      await wllama.loadModelFromUrl(modelUrl, {});
-      setCmplDisable(false);
-
-      elemBtnCompletions.onclick = async () => {
-        setCmplDisable(true);
-        await wllama.createCompletion(elemInput.value, {
-          nPredict: parseInt(elemNPredict.value),
-          sampling: {
-            temp: 0.5,
-            top_k: 40,
-            top_p: 0.9,
-          },
-          onNewToken: (token, piece, currentText) => {
-            elemOutputCmpl.textContent = currentText;
-          },
-        });
-        setCmplDisable(false);
-      };
-    }
-
-    /////////////////////////////////////////////////////////////////////
-    // embeddings
-
-    async function startEmbeddings(modelUrl) {
-      const wllama1 = new Wllama(CONFIG_PATHS);
-      await wllama1.loadModelFromUrl(modelUrl, {
-        // IMPORTANT: do not forget to set embeddings to true. If not set, "createEmbedding" will crash the app
-        embeddings: true,
-        pooling_type: 'LLAMA_POOLING_TYPE_MEAN', // depend on the model, you will need to change this
-      });
-      setEmbdDisable(false);
-
-      elemBtnEmbeddings.onclick = async () => {
-        setEmbdDisable(true);
-        const embdA = await wllama1.createEmbedding(elemInputA.value);
-        console.log({embdA});
-        const embdB = await wllama1.createEmbedding(elemInputB.value);
-        console.log({embdB});
-        // since embeddings are normalized, we don't need to calculate norm
-        const dotProd = embdA.reduce((acc, _, i) => acc + embdA[i]*embdB[i], 0);
-        elemOutputEmbd.textContent = dotProd;
-        setEmbdDisable(false);
-      };
-    }
-
-    /////////////////////////////////////////////////////////////////////
-
-    // DOM elements: completions
-    const elemCmplModel = document.getElementById('cmpl_model');
-    const elemBtnStartCmpl = document.getElementById('btn_start_cmpl');
-    const elemInput = document.getElementById('input_prompt');
-    const elemNPredict = document.getElementById('input_n_predict');
-    const elemBtnCompletions = document.getElementById('btn_run_cmpl');
-    const elemOutputCmpl = document.getElementById('output_cmpl');
-    // DOM elements: embeddings
-    const elemEmbdModel = document.getElementById('embd_model');
-    const elemBtnStartEmbd = document.getElementById('btn_start_embd');
-    const elemInputA = document.getElementById('input_a');
-    const elemInputB = document.getElementById('input_b');
-    const elemBtnEmbeddings = document.getElementById('btn_run_embd');
-    const elemOutputEmbd = document.getElementById('output_embd');
-    // utils
-    const setCmplDisable = (disabled) => {
-      elemInput.disabled = disabled;
-      elemNPredict.disabled = disabled;
-      elemBtnCompletions.disabled = disabled;
-    };
-    const setEmbdDisable = (disabled) => {
-      elemInputA.disabled = disabled;
-      elemInputB.disabled = disabled;
-      elemBtnEmbeddings.disabled = disabled;
-    };
-
-    main();
-
-
-    let _list = [];
-    let _isCompleted = [];
-    window.addEventListener('message', (msg) => {
-      const { event } = msg.data;
-      if (event == 'load.progress') {
-        const { id, rate} = msg.data;
-        _list[id] = rate;
-        console.log(
-          (_list.reduce((a, c) => a + c) / _list.length).toFixed(0)
-        );
-      } else if (event == 'load.complete') {
-        console.log('model: loaded');
-      }
-    });
-  </script>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+      <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>.
+      The source code is licensed
+      <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The
+      website content is licensed
+      <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
+        >CC BY NC SA 4.0</a
+      >.
+      </p>
+    </div>
+  </footer>
 </body>
 </html>
