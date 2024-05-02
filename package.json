@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "copy": "./copy.zsh",
+    "copy": "./copy.sh",
     "remove": "rm -rf dist",
     "build:prod": "tsc -p ./tsconfig.build.json && ./fix_extension.sh && bun run copy",
     "build:dev": "tsc -p ./tsconfig.build.json && ./fix_extension.sh",
