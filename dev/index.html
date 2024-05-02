@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css" />
 
   <link rel="stylesheet" href="./assets/css/all.min.css" />
+  <link rel="stylesheet" href="./assets/css/brands.min.css" />
 
   <!-- wllama.git
   <style>
@@ -47,19 +48,50 @@
 <body>
 
   <div class="content mx-6 mt-6">
-    <h2>LLM in Browser</h2>
+    <div class="block">
+      <h2>LLM in Browser</h2>
+    </div>
 
-    <p>大規模言語モデル（LLM）をブラウザの機能だけで（サーバーにデータを送らずに）使ってみるサイトです。</p>
-    <p>各モデルの利用条件は、各モデルの公式リポジトリ等を参照してください。</p>
-    <p>このサイトが気に入ったら、<a href="https://potofu.me/m4k15y6666fk/">ご支援</a>をお願いします。</p>
+    <div class="block">
+      <p>大規模言語モデル（LLM）をブラウザの機能だけで（サーバーにデータを送らずに）使ってみるサイトです。</p>
+      <p>各モデルの利用条件は、各モデルの公式リポジトリ等を参照してください。</p>
+    </div>
 
-    <dl>
-      <dt class="has-text-weight-bold">GitHub</dt>
-      <dd><a href="https://github.com/m4k15y6666fk/llm-in-browser">https://github.com/m4k15y6666fk/llm-in-browser</a></dd>
+    <div class="block">
+      <div class="field">
+        <a href="https://potofu.me/m4k15y6666fk/" class="button is-rounded">
+          <span class="icon-text">
+            <span class="icon has-text-danger">
+              <i class="fas fa-heart"></i>
+            </span>
+            <span>ご支援 / Support</span>
+          </span>
+        </a>
+        <p class="help">&#8251;&#32;このサイトが気に入ったら、ご支援をお願いします</p>
+      </div>
+    </div>
 
-      <dt class="has-text-weight-bold">作者のページ</dt>
-      <dd><a href="https://potofu.me/m4k15y6666fk/">https://potofu.me/m4k15y6666fk/</a></dd>
-    </dl>
+    <div class="block">
+      <div class="field is-grouped">
+        <a href="https://potofu.me/m4k15y6666fk/" class="button is-rounded">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-list"></i>
+            </span>
+            <span>作者プロフィール</span>
+          </span>
+        </a>
+
+        <a href="https://github.com/m4k15y6666fk/llm-in-browser" class="button is-rounded">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fab fa-github"></i>
+            </span>
+            <span>GitHub</span>
+          </span>
+        </a>
+      </div>
+    </div>
 
     <hr>
 
@@ -79,8 +111,12 @@
         <dt class="has-text-weight-bold">Language</dt>
         <dd id="model-lang"></dd>
 
-        <dt class="has-text-weight-bold">size</dt>
+        <dt class="has-text-weight-bold">Size</dt>
         <dd id="model-size"></dd>
+
+        <!-- TODO: change by selection & create link -->
+        <dt class="has-text-weight-bold">License</dt>
+        <dd id="model-license">Apache-2.0</dd>
 
         <dt class="has-text-weight-bold">Repository</dt>
         <dd>
@@ -326,6 +362,77 @@
 
     <div class="container" id="history-container"></div>
 
+    <hr>
+
+    <h3>
+      <span data-heading="true"></span>
+      <span>Special Thanks</span>
+    </h3>
+
+    <h4>wllama</h4>
+
+    <div class="block">
+      <div class="field">
+        <a href="https://github.com/ngxson/wllama" class="button is-rounded is-link">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fab fa-github"></i>
+            </span>
+            <span>GitHub</span>
+          </span>
+        </a>
+        <p class="help">&#8251;&#32;WASM and Worker scripts.</p>
+      </div>
+    </div>
+
+    <h4>llama.cpp</h4>
+
+    <div class="block">
+      <div class="field">
+        <a href="https://github.com/ggerganov/llama.cpp" class="button is-rounded is-link">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fab fa-github"></i>
+            </span>
+            <span>GitHub</span>
+          </span>
+        </a>
+        <p class="help">&#8251;&#32;Main programs for LLMs.</p>
+      </div>
+    </div>
+
+    <h4>Bulma</h4>
+
+    <div class="block">
+      <div class="field">
+        <a href="https://bulma.io/" class="button is-rounded is-link">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-globe"></i>
+            </span>
+            <span>Website</span>
+          </span>
+        </a>
+        <p class="help">&#8251;&#32;CSS designs.</p>
+      </div>
+    </div>
+
+    <h4>Font Awesome</h4>
+
+    <div class="block">
+      <div class="field">
+        <a href="https://fontawesome.com/" class="button is-rounded is-link">
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fab fa-font-awesome"></i>
+            </span>
+            <span>Website</span>
+          </span>
+        </a>
+        <p class="help">&#8251;&#32;Icons.</p>
+      </div>
+    </div>
+
   </div>
 
 
@@ -380,13 +487,12 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-      <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>.
-      The source code is licensed
-      <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The
-      website content is licensed
-      <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
-        >CC BY NC SA 4.0</a
-      >.
+        <span class="icon-text">
+          <span class="icon">
+            <i class="far fa-copyright"></i>
+          </span>
+          <span>2024 <a href="https://github.com/m4k15y6666fk/">hiiro</a></span>
+        </span>
       </p>
     </div>
   </footer>
