@@ -177,3 +177,6 @@ dist
 
 ##
 dev/esm
+
+key.pem
+cert.pem
