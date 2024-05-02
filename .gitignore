@@ -176,7 +176,13 @@ dist
 
 
 ##
-dev/esm
+dev/esm/*
+!dev/esm/single-thread/
+dev/esm/single-thread/*
+!dev/esm/single-thread/.gitkeep
+!dev/esm/multi-thread/
+dev/esm/multi-thread/*
+!dev/esm/multi-thread/.gitkeep
 
 key.pem
 cert.pem
